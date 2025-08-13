@@ -25,37 +25,39 @@
         </div>
         <!-- Daftar Produk -->
         <div class="flex-grow mt-3">
-            <div class="flex-grow mt-3">
-                <!-- Responsive grid: 2 kolom HP, 3 kolom tablet, 5 kolom desktop -->
-                <div class="grid gap-2 p-1" style="grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));">
-                    @foreach ($products as $product)
-                        <x-filament::section
-                            class="!p-2 !m-0 cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:scale-105 group border border-transparent hover:border-primary-200 dark:hover:border-primary-700"
-                            wire:click="addToOrder({{ $product->id }})" style="min-width: 120px; max-width: 200px;">
-                            <div class="space-y-1">
-                                <!-- Product details -->
-                                <div class="text-center space-y-1">
-                                    <h3
-                                        class="text-xs font-medium text-gray-900 dark:text-white line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-300 leading-tight">
-                                        {{ $product->name ?? 'Nama Produk' }}
-                                    </h3>
+    <div class="flex-grow mt-3">
+        <!-- Responsive grid: 2 kolom HP, 3 kolom tablet, 5 kolom desktop -->
+        <div class="grid gap-2 p-1" style="grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));">
+            @foreach ($products as $product)
+                <x-filament::section
+                    class="!p-2 !m-0 cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:scale-105 group border border-transparent hover:border-primary-200 dark:hover:border-primary-700"
+                    wire:click="addToOrder({{ $product->id }})" style="min-width: 140px; max-width: 220px;">
+                    <div class="space-y-2">
+                        <!-- Product details -->
+                        <div class="text-center space-y-2">
+                            <h3
+                                class="text-xs font-medium text-gray-900 dark:text-white line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-300 leading-tight min-h-[2.5rem] flex items-center justify-center">
+                                {{ $product->name ?? 'Nama Produk' }}
+                            </h3>
 
-                                    <x-filament::badge color="success" size="sm"
-                                        class="font-semibold group-hover:scale-105 transition-transform duration-200">
-                                        Rp {{ number_format($product->price ?? 10000, 0, ',', '.') }}
-                                    </x-filament::badge>
-                                </div>
+                            <div class="w-full">
+                                <x-filament::badge color="success" size="sm"
+                                    class="font-semibold group-hover:scale-105 transition-transform duration-200 whitespace-nowrap text-xs px-2 py-1 inline-block w-auto max-w-full overflow-visible">
+                                    <span class="block text-center">Rp {{ number_format($product->price ?? 10000, 0, ',', '.') }}</span>
+                                </x-filament::badge>
                             </div>
-                        </x-filament::section>
-                    @endforeach
-                </div>
-            </div>
-
-            <!-- Pagination -->
-            <div class="py-4">
-                <x-filament::pagination :paginator="$products" :page-options="[5, 10, 20, 50, 100]" extreme-links :current-page-option-property="$perPage" />
-            </div>
+                        </div>
+                    </div>
+                </x-filament::section>
+            @endforeach
         </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="py-4">
+        <x-filament::pagination :paginator="$products" :page-options="[5, 10, 20, 50, 100]" extreme-links :current-page-option-property="$perPage" />
+    </div>
+</div>
 
 
 
