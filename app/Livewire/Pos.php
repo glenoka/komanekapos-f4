@@ -781,79 +781,160 @@ public function resumeBill($slug) {
     //print
     function printOrderToLan($saleId)
     {
-        $sale = Sales::with('details')->findOrFail($saleId);
+        $sale = Sales::with('detailSales','customer')->findOrFail($saleId);
     
         try {
             $ip = "192.168.4.38"; // IP printer
-            $port = 9100; // Port default printer thermal LAN
+            $port = 9100; // Default thermal printer LAN port
     
             $connector = new NetworkPrintConnector($ip, $port);
             $printer = new Printer($connector);
     
-            // ===== HEADER TOKO =====
+            // ===== STORE HEADER =====
             $printer->setJustification(Printer::JUSTIFY_CENTER);
-            $printer->text("TOKO MAJU JAYA\n");
-            $printer->text("Jl. Contoh No. 123\n");
-            $printer->text("Telp: 08123456789\n");
+            $printer->text("Komaneka at Bisma\n");
+            $printer->text("Jl. Bisma, Ubud, Kecamatan Ubud\n");
+            $printer->text("Tel: (0361) 971933\n");
             $printer->text(str_repeat("=", 32) . "\n");
     
-            // ===== INFO ORDER (Dengan Margin) =====
+            // ===== ORDER INFO (With Margin) =====
             $printer->setJustification(Printer::JUSTIFY_LEFT);
-            $printer->text("  Invoice : {$sale->invoice_number}\n"); // 2 spasi kiri
-            $printer->text("  Tanggal : " . now()->format('d-m-Y H:i') . "\n");
+            $printer->text("  Invoice : {$sale->invoice_number}\n"); // 2 spaces left margin
+            $printer->text("  Date    : " . now()->format('d-m-Y H:i') . "\n");
+            
+            // Customer and Activity in left-right columns
+            $customerText = "Customer";
+            $customerValue = $sale->customer->name ?? "Guest";
+            $customerLine = "  " . $customerText . str_pad($customerValue, 32 - 2 - strlen($customerText), " ", STR_PAD_LEFT) . "\n";
+            $printer->text($customerLine);
+            
+            $activityText = "Activity";
+            $activityValue = $sale->activity ?? "Retail";
+            $activityLine = "  " . $activityText . str_pad($activityValue, 32 - 2 - strlen($activityText), " ", STR_PAD_LEFT) . "\n";
+            $printer->text($activityLine);
+            
             $printer->text(str_repeat("-", 32) . "\n");
     
-            // ===== LIST ITEM (Dengan Margin) =====
-            foreach ($this->order_items as $item) {
-                // Nama produk
-                $printer->text("  " . $item['name'] . "\n"); // Margin kiri 2 spasi
+            // ===== ITEM LIST (With Margin) =====
+            $totalItems = 0;
+            foreach ($sale->detailSales as $item) {
+                $totalItems += $item->quantity;
+                
+                // Product name
+                $printer->text("  " . $item->product_name . "\n"); // Left margin 2 spaces
     
-                // Format qty x harga satuan ........ total
-                $line = "  " . $item['quantity'] . " x " . number_format($item['unit_price']); 
+                // Format qty x unit price ........ item subtotal
+                $itemSubtotal = $item->quantity * $item->unit_price;
+                $line = "  " . $item->quantity . " x " . number_format($item->unit_price); 
                 $printer->text(
                     $line .
                     str_pad(
-                        number_format($item['final_price']),
-                        32 - strlen($line), // lebar max 32 karakter
+                        number_format($itemSubtotal),
+                        32 - strlen($line), // max width 32 characters
                         " ",
                         STR_PAD_LEFT
                     ) . "\n"
                 );
+    
+                // Show item discount if any
+                if ($item->discount_amount > 0) {
+                    $discountLine = "    Item Discount";
+                    $printer->text(
+                        $discountLine .
+                        str_pad(
+                            "-" . number_format($item->discount_amount),
+                            32 - strlen($discountLine),
+                            " ",
+                            STR_PAD_LEFT
+                        ) . "\n"
+                    );
+                    
+                    // Total after item discount
+                    $finalItemPrice = $itemSubtotal - $item->discount_amount;
+                    $totalLine = "    Item Total";
+                    $printer->text(
+                        $totalLine .
+                        str_pad(
+                            number_format($finalItemPrice),
+                            32 - strlen($totalLine),
+                            " ",
+                            STR_PAD_LEFT
+                        ) . "\n"
+                    );
+                }
+                
+                $printer->text("\n"); // Space between items
             }
     
-            // ===== RINCIAN HARGA =====
+            // ===== PRICE BREAKDOWN =====
             $printer->text(str_repeat("-", 32) . "\n");
+            
+            // Total Items
+            $printer->text("  Total Items" . str_pad($totalItems, 21, " ", STR_PAD_LEFT) . "\n");
+            
+            // Subtotal (before discount and tax)
             $printer->text("  Subtotal" . str_pad(number_format($sale->subtotal), 23, " ", STR_PAD_LEFT) . "\n");
-            $printer->text("  Tax" . str_pad(number_format($sale->tax_amount), 27, " ", STR_PAD_LEFT) . "\n");
-            $printer->text("  Diskon" . str_pad("-" . number_format($sale->discount_amount), 24, " ", STR_PAD_LEFT) . "\n");
+            
+            // Total order discount if any
+            if ($sale->discount_amount > 0) {
+                // Check if discount is percentage or nominal
+                $discountText = "  Discount";
+                if ($sale->discount_percentage > 0) {
+                    $discountText = "  Discount ({$sale->discount_percentage}%)";
+                }
+                
+                $printer->text($discountText . str_pad("-" . number_format($sale->discount_amount), 32 - strlen($discountText), " ", STR_PAD_LEFT) . "\n");
+                
+                // Subtotal after discount
+                $afterDiscount = $sale->subtotal - $sale->discount_amount;
+                $printer->text("  After Discount" . str_pad(number_format($afterDiscount), 18, " ", STR_PAD_LEFT) . "\n");
+            }
+            
+            // Tax (always show percentage)
+            if ($sale->tax_amount > 0) {
+                $taxPercentage = $sale->tax_percentage > 0 ? $sale->tax_percentage : 11; // Default 11% if not set
+                $taxText = "  Tax ({$taxPercentage}%)";
+                $printer->text($taxText . str_pad(number_format($sale->tax_amount), 32 - strlen($taxText), " ", STR_PAD_LEFT) . "\n");
+            }
+            
             $printer->text(str_repeat("-", 32) . "\n");
     
             // ===== TOTAL =====
+            $printer->setJustification(Printer::JUSTIFY_LEFT);
             $printer->text("  TOTAL" . str_pad(number_format($sale->total_amount), 26, " ", STR_PAD_LEFT) . "\n");
             $printer->text(str_repeat("=", 32) . "\n");
     
+            // ===== PAYMENT INFORMATION =====
+        if (isset($sale->payment_method)) {
+            $printer->text("  Payment    : {$sale->payment_method}\n");
+        }
+    
+           
+            
+           
+    
             // ===== FOOTER =====
             $printer->setJustification(Printer::JUSTIFY_CENTER);
-            $printer->text("Terima kasih telah berbelanja!\n");
+            $printer->text("Thank you!\n");
+            $printer->text("Have a wonderful day!\n");
             $printer->feed(1);
     
-            // ===== TANDA TANGAN (Dengan Margin Tengah) =====
+            // ===== SIGNATURE (With Center Margin) =====
             $printer->feed(2);
             $printer->setJustification(Printer::JUSTIFY_LEFT);
-            $printer->text(str_pad("Penerima", 32, " ", STR_PAD_BOTH) . "\n");
+            $printer->text(str_pad("Received by", 32, " ", STR_PAD_BOTH) . "\n");
             $printer->feed(3);
             $printer->text(str_pad("(__________________________)", 32, " ", STR_PAD_BOTH) . "\n");
     
-           
             $printer->feed(3);
             $printer->cut();
             $printer->close();
     
         } catch (\Exception $e) {
-            Log::error("Gagal print: " . $e->getMessage());
+            Log::error("Print failed: " . $e->getMessage());
+            throw new \Exception("Failed to print receipt: " . $e->getMessage());
         }
     }
-    
 
 
     public function render()

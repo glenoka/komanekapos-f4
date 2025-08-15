@@ -90,62 +90,7 @@
                     <span>Hold Bill</span>
                 </x-filament::button>
                 {{-- Modal List --}}
-                <x-filament::modal id="ModalListBill" width="xl">
-
-                    <x-filament::section>
-                        <x-slot name="heading">
-                            Hold Bill List
-                        </x-slot>
-
-                        @if ($holdBillList->isEmpty())
-                            <div class="text-gray-500 text-sm">
-                                No bills are currently on hold.
-                            </div>
-                        @else
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                @foreach ($holdBillList as $bill)
-                                    <div class="bg-white border rounded-xl shadow p-4">
-                                        <div class="flex justify-between items-center mb-2">
-                                            <h3 class="font-semibold text-lg">
-                                                {{ $bill->customer->name ?? 'No Customer' }}
-                                            </h3>
-                                            <span class="text-xs text-gray-500">
-                                                {{ $bill->sale_date }}
-                                            </span>
-                                        </div>
-
-                                        <div class="text-sm text-gray-600 mb-3">
-                                            <p><strong>Type Order:</strong> {{ $bill->order_type ?? '-' }}</p>
-                                            <p><strong>Table:</strong> {{ $bill->table_no ?? '-' }}</p>
-                                            <p><strong>Total: Rp. </strong> {{ number_format($bill->total_amount, 2) }}</p>
-                                            <p><strong>Items:</strong> {{ $bill->detailSales->count() }}</p>
-                                        </div>
-
-                                        <div class="flex gap-2">
-                                            <x-filament::button color="info" size="sm"
-                                               wire:click="resumeBill('{{ $bill->slug }}')"
-
->
-                                                Resume
-                                            </x-filament::button>
-                                            <x-filament::button color="danger" size="sm"
-                                               wire:click="deleteBill('{{ $bill->slug }}')"
->
-                                                Delete
-                                            </x-filament::button>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        @endif
-                    </x-filament::section>
-
-
-                </x-filament::modal>
-
-
-
-
+                
             </div>
         </div>
 
@@ -355,4 +300,63 @@
         @endif
     </div>
     <x-filament-actions::modals />
+
+    <x-filament::modal id="ModalListBill" width="4xl"> <!-- Lebarkan modal -->
+    @if ($holdBillList->isEmpty())
+        <x-filament::section>
+            <div class="flex flex-col items-center justify-center py-12 text-gray-500 text-sm">
+                <x-heroicon-o-inbox class="w-12 h-12 mb-4"/>
+                No bills are currently on hold.
+            </div>
+        </x-filament::section>
+    @else
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4"> <!-- Grid 2 kolom -->
+            @foreach ($holdBillList as $bill)
+                <x-filament::section class="h-full"> <!-- Tambahkan h-full -->
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-bold text-lg">
+                                {{ $bill->customer->name ?? 'No Customer' }}
+                            </h3>
+                            <p class="text-xs text-gray-400">
+                                {{ $bill->sale_date }} {{ $bill->sale_time }}
+                            </p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-semibold">Room {{ $bill->room_number ?? '-' }}</p>
+                            <p class="text-xs text-gray-400">{{ $bill->created_at->format('H:i:s') }}</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 text-sm space-y-2">
+                        <p><strong>Type Order:</strong> 
+                            <span class="inline-block bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs ml-1">
+                                {{ $bill->order_type ?? '-' }}
+                            </span>
+                        </p>
+                        <p><strong>Table:</strong> {{ $bill->table_no ?? '-' }}</p>
+                        <p><strong>Total:</strong> 
+                            <span class="text-green-600 font-semibold">
+                                Rp. {{ number_format($bill->total_amount, 0, ',', '.') }}
+                            </span>
+                        </p>
+                        <p><strong>Items:</strong> {{ $bill->detailSales->count() }}</p>
+                    </div>
+
+                    <div class="flex gap-3 mt-4">
+                        <x-filament::button color="success" size="sm" class="flex-1 justify-center"
+                            wire:click="resumeBill('{{ $bill->slug }}')">
+                            <x-heroicon-o-play class="w-4 h-4 mr-1"/> Resume
+                        </x-filament::button>
+
+                        <x-filament::button color="danger" size="sm" class="flex-1 justify-center"
+                            wire:click="deleteBill('{{ $bill->slug }}')">
+                            <x-heroicon-o-trash class="w-4 h-4 mr-1"/> Delete
+                        </x-filament::button>
+                    </div>
+                </x-filament::section>
+            @endforeach
+        </div>
+    @endif
+</x-filament::modal>
 </div>
