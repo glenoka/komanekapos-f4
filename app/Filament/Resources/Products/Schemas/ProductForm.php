@@ -11,6 +11,9 @@ use Filament\Forms\Components\FileUpload;
 
 class ProductForm
 {
+  
+
+
     public static function configure(Schema $schema): Schema
     {
         return $schema
@@ -55,8 +58,7 @@ class ProductForm
                 ->numeric()
                 ->prefix('IDR')
                 ->step(0.01)
-                ->minValue(0)
-                ->formatStateUsing(fn ($state) => number_format($state, 0, ',', '.')),
+                ->minValue(0),
 
             FileUpload::make('path_images')
                 ->label('Product Images')
