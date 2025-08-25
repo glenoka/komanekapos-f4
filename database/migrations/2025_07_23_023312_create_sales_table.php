@@ -39,7 +39,8 @@ return new class extends Migration
             $table->integer('total_items');
          
             $table->json('payment_details')->nullable(); // untuk multiple payment methods
-            $table->enum('activity', ['breakfast', 'lunch', 'dinner', 'afternoontea']);
+            $table->enum('activity', ['breakfast', 'breakfast inclusive', 'lunch', 'dinner', 'afternoontea','entertainment','officer',
+        'room service','dinner inclusive','lunch inclusive','drink','candle light dinner','supper','red light special dinner','afternoon tea']);
             // Status
             $table->enum('status', ['completed', 'pending', 'cancelled', 'refunded'])->default('pending');
                 

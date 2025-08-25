@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Printers extends Model
 {
@@ -15,4 +16,9 @@ class Printers extends Model
         'port',
         'mac_address'
     ];
+
+    public function printer_task():HasMany
+    {
+        return $this->hasMany(PrinterTask::class);
+    }
 }
