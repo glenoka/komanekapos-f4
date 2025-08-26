@@ -14,6 +14,7 @@ class SalesTable
     public static function configure(Table $table): Table
     {
         return $table
+        ->defaultSort('sale_date','desc')
             ->columns([
                 TextColumn::make('invoice_number')
                 ->toggleable()
