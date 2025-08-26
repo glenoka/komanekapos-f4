@@ -13,5 +13,9 @@ class PrinterTask extends Model
         'device_uuid',
        
     ];
+
+    public function printer(){
+        return $this->belongsTo(Printers::class);
+    }
     
 }

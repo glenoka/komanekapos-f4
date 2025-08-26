@@ -11,10 +11,12 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Forms\Set;
 use Livewire\Component;
 use App\Models\Category;
+use App\Models\Printers;
 use App\Models\Customer;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Mike42\Escpos\Printer;
+
 
 use App\Models\SalesDetail;
 
@@ -83,10 +85,40 @@ class Pos extends Component implements HasForms, HasTable , HasActions
 
     public $bill_slug; //untuk slug bill yang di resume 
 
+    public $printerStatus;
+
 
 
     public function mount(): void
     {
+        //Check Printer 
+        $ip=request()->ip();
+        $printer = Printers::whereHas('printer_task', function ($q) use ($ip) {
+            $q->where('ip_address', $ip);
+        })->first();
+        $ipPrinter=$printer->ip_address;
+        
+        if ($printer) {
+            $ipPrinter = $printer->ip_address;
+            $printerName=$printer->name;
+           
+         
+            // Cek apakah status printer sudah di-cache di session
+           // Selalu update status printer terbaru
+$isReachable = $this->isReachable($ipPrinter);
+
+// Simpan/update session dengan status terbaru
+session()->put('status_printer', $isReachable);
+session()->put("printer_{$ipPrinter}_last_checked", now());
+
+$this->printerStatus = $isReachable ? "online" : "disconnected";
+        }
+    
+        if (session()->has('orderItems')) {
+            $this->order_items = session('orderItems');
+        }
+
+
         if (session()->has('orderItems')) {
             $this->order_items = session('orderItems');
         }
@@ -97,6 +129,15 @@ class Pos extends Component implements HasForms, HasTable , HasActions
     ->get();
     $this->countBillHold=count($this->holdBillList);
              
+    }
+
+    function isReachable($ip, $port = 9100, $timeout = 2) {
+        $conn = @fsockopen($ip, $port, $errno, $errstr, $timeout);
+        if ($conn) {
+            fclose($conn);
+            return true;
+        }
+        return false;
     }
     protected function getForms(): array
     {
