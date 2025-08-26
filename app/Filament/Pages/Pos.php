@@ -31,6 +31,8 @@ class Pos extends Page
 
             // Simpan/update session dengan status terbaru
             session()->put('status_printer', $isReachable);
+            session()->put('printernya','aada');
+
             session()->put("printer_{$ipPrinter}_last_checked", now());
 
             $this->printerStatus = $isReachable ? "online" : "disconnected";

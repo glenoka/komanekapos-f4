@@ -92,7 +92,7 @@ class Pos extends Component implements HasForms, HasTable, HasActions
     public function mount(): void
     {
         //Check Printer 
-        
+
 
         if (session()->has('orderItems')) {
             $this->order_items = session('orderItems');
@@ -110,7 +110,7 @@ class Pos extends Component implements HasForms, HasTable, HasActions
         $this->countBillHold = count($this->holdBillList);
     }
 
-   
+
     protected function getForms(): array
     {
         return [
@@ -217,7 +217,16 @@ class Pos extends Component implements HasForms, HasTable, HasActions
                                 'breakfast' => 'Breakfast',
                                 'lunch' => 'Lunch',
                                 'dinner' => 'Dinner',
-                                'afternoon_tea' => 'Afternoon Tea'
+                                'entertainment' => 'Entertainment',
+                                'officer' => 'Officer',
+                                'room_service' => 'Room service',
+                                'dinner_inclusive' => 'Dinner inclusive',
+                                'lunch_inclusive' => 'Lunch inclusive',
+                                'drink' => 'Drink',
+                                'candle_light_dinner' => 'Candle light dinner',
+                                'supper' => 'Supper',
+                                'red_light_special_dinner' => 'Red light special dinner',
+                                'afternoon_tea' => 'Afternoon tea',
                             ]),
 
                         Select::make('customer_id')
@@ -572,8 +581,11 @@ class Pos extends Component implements HasForms, HasTable, HasActions
                     'is_complimentary' => false,
                 ]);
             }
-            //print
-            $this->printOrderToLan($sales->id);
+            //print if printer is reachable
+
+            if (session()->get('status_printer')) {
+                $this->printOrderToLan($sales->id);
+            }
         });
         Notification::make('payment')
             ->title('Paymanet Success')
