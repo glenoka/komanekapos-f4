@@ -33,7 +33,7 @@ class PrintersResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\PrinterTaskRelationManager::class,
         ];
     }
 

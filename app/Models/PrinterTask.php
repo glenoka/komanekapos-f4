@@ -8,7 +8,10 @@ class PrinterTask extends Model
 {
     protected $fillable=[
         'printer_id',
-        'hostname'
+        'ip_address',
+        'device_name',
+        'device_uuid',
+       
     ];
     
 }
