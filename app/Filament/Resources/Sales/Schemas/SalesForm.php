@@ -82,8 +82,7 @@ class SalesForm
                             ->label('Tax Amount')
                             ->prefix('Rp')
                             ->required()
-                            ->numeric()
-                            ->default(0.0),
+                            ->numeric(),
 
                         TextInput::make('discount_amount')
                             ->label('Discount')
@@ -113,7 +112,7 @@ class SalesForm
                         TextInput::make('total_items')
                             ->label('Total Items')
                             ->required()
-                           
+
                             ->numeric(),
 
                         Textarea::make('payment_details')
@@ -168,6 +167,10 @@ class SalesForm
                         Repeater::make('detailSales')
                             ->label('Sales Items')
                             ->live()
+                            ->relationship()
+                            ->mutateRelationshipDataBeforeSaveUsing(function (array $data) {
+                              dd($data);
+                            })
                             ->afterStateUpdated(
                                 function ($state, callable $set, callable $get) {
                                     // Hitung subtotal dari semua total_price di detailSales
@@ -175,14 +178,19 @@ class SalesForm
                                     $set('subtotal', $subtotal);
 
                                     $itemCount = is_array($state) ? count($state) : 0;
-        
-        // Mengisi field 'total_items' dengan jumlah item
-        $set('total_items', $itemCount);
 
-                                   
+                                    // Mengisi field 'total_items' dengan jumlah item
+                                    $set('total_items', $itemCount);
+                                    $tax_amount=$subtotal*0.11;
+                                    $set('../../subtotal', $subtotal);
+                                    $set('../../tax_amount',$tax_amount);
+                                    $set('../../total_amount',$subtotal+$tax_amount);
+
+                                    
                                 }
                             )
-                            ->relationship()
+                            
+                           
                             ->schema([
                                 Select::make('product_id')
                                     ->label('Product')
@@ -198,6 +206,14 @@ class SalesForm
                                             $set('unit_price', $unitPrice);
                                             // Hitung total_price berdasarkan unit_price dan quantity yang ada
                                             $set('total_price', $unitPrice * $get('quantity'));
+
+                                             // Hitung ulang subtotal keseluruhan
+                                             $parentState = $get('../../detailSales'); // Ambil semua detailSales
+                                             $subtotal = collect($parentState)->sum('total_price');
+                                             $tax_amount=$subtotal*0.11;
+                                             $set('../../subtotal', $subtotal);
+                                             $set('../../tax_amount',$tax_amount);
+                                             $set('../../total_amount',$subtotal+$tax_amount);
                                         }
                                     )
                                     ->required(),
@@ -208,8 +224,20 @@ class SalesForm
                                     ->live()
                                     ->default(1)
                                     ->afterStateUpdated(
-                                        fn($state, callable $set, $get) =>
-                                        $set('total_price', $state * $get('unit_price'))
+                                        function ($state, callable $set, callable $get) {
+                                            // Hitung total harga item
+                                            $unitPrice = $get('unit_price');
+                                            $total = $state * $unitPrice;
+                                            $set('total_price', $total);
+                               
+                                            // Hitung ulang subtotal keseluruhan
+                                            $parentState = $get('../../detailSales'); // Ambil semua detailSales
+                                            $subtotal = collect($parentState)->sum('total_price');
+                                            $tax_amount=$subtotal*0.11;
+                                            $set('../../subtotal', $subtotal);
+                                            $set('../../tax_amount',$tax_amount);
+                                            $set('../../total_amount',$subtotal+$tax_amount);
+                                        }
                                     )
                                     ->required(),
 
@@ -227,6 +255,7 @@ class SalesForm
                                     ->readOnly()
                                     ->required(),
                             ])
+                            
                             ->columns(3),
                     ]),
 
