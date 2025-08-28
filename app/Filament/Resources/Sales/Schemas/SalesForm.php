@@ -170,6 +170,11 @@ class SalesForm
                             ->live()
                             ->relationship()
                             
+     ->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
+       $data['product_name'] = \App\Models\Product::find($data['product_id'])?->name ?? 'Unknown Product';
+       $data['unit_price'] = \App\Models\Product::find($data['product_id'])?->price ?? 0;
+        return $data;
+    })
                             ->afterStateUpdated(
                                 function ($state, callable $set, callable $get) {
                                     // Hitung subtotal dari semua total_price di detailSales
@@ -203,7 +208,7 @@ class SalesForm
                                             // Dapatkan harga produk yang dipilih
                                             $unitPrice = \App\Models\Product::find($state)?->price ?? 0;
                                             // Set unit_price
-                                            $set('unit_price', $unitPrice);
+                                            $set('original_price', $unitPrice);
                                             // Hitung total_price berdasarkan unit_price dan quantity yang ada
                                             $set('total_price', $unitPrice * $get('quantity'));
 
@@ -226,7 +231,7 @@ class SalesForm
                                     ->afterStateUpdated(
                                         function ($state, callable $set, callable $get) {
                                             // Hitung total harga item
-                                            $unitPrice = $get('unit_price');
+                                            $unitPrice = $get('original_price');
                                             $total = $state * $unitPrice;
                                             $set('total_price', $total);
                                
@@ -241,7 +246,7 @@ class SalesForm
                                     )
                                     ->required(),
 
-                                TextInput::make('unit_price')
+                                TextInput::make('original_price')
                                     ->label('Unit Price')
                                     ->prefix('Rp')
                                     ->readOnly()

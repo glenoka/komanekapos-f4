@@ -4,10 +4,13 @@ namespace App\Filament\Pages;
 
 use App\Models\Printers;
 use Filament\Pages\Page;
+use BackedEnum;
 
 class Pos extends Page
 
 {
+
+protected static string | BackedEnum | null $navigationIcon = 'heroicon-o-computer-desktop';
     protected string $view = 'filament.pages.pos';
     public $printerStatus = "disconnected";
 
