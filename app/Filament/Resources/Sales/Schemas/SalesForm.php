@@ -10,6 +10,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Schemas\Components\Utilities\Set;
 
 class SalesForm
 {
@@ -168,23 +169,22 @@ class SalesForm
                             ->label('Sales Items')
                             ->live()
                             ->relationship()
-                            ->mutateRelationshipDataBeforeSaveUsing(function (array $data) {
-                              dd($data);
-                            })
+                            
                             ->afterStateUpdated(
                                 function ($state, callable $set, callable $get) {
                                     // Hitung subtotal dari semua total_price di detailSales
                                     $subtotal = collect($state)->sum('total_price');
-                                    $set('subtotal', $subtotal);
+                          
 
                                     $itemCount = is_array($state) ? count($state) : 0;
-
-                                    // Mengisi field 'total_items' dengan jumlah item
                                     $set('total_items', $itemCount);
+                                    $set('subtotal', $subtotal);
                                     $tax_amount=$subtotal*0.11;
-                                    $set('../../subtotal', $subtotal);
-                                    $set('../../tax_amount',$tax_amount);
-                                    $set('../../total_amount',$subtotal+$tax_amount);
+                                    $set('tax_amount',$tax_amount);
+                                    $set('total_amount',$subtotal+$tax_amount);
+                                 //\App\Filament\Resources\Sales\Schemas\SalesForm::calculateTotals($state, $get, $set);
+
+                                   
 
                                     
                                 }
@@ -263,4 +263,7 @@ class SalesForm
                     ->required(),
             ]);
     }
+
+  
+    
 }
