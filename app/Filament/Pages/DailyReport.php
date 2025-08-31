@@ -7,7 +7,9 @@ use App\Models\Sales;
 use Filament\Pages\Page;
 use Filament\Actions\Action;
 use Filament\Schemas\Schema;
+use App\Exports\DailyReportExport;
 use Illuminate\Support\Collection;
+use Maatwebsite\Excel\Facades\Excel;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Components\Grid;
 use Filament\Forms\Contracts\HasForms;
@@ -144,4 +146,10 @@ class DailyReport extends Page implements HasForms
 
         return $calendar;
     }
+
+    public function exportExcel()
+{
+    $filename = 'daily_report_' . now()->format('Y_m_d_His') . '.xlsx';
+    return Excel::download(new DailyReportExport($this->selectedMonth, $this->selectedYear), $filename);
+}
 }
