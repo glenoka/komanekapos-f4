@@ -2,5 +2,6 @@
 
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';
+@source '../../../../resources/views/filament/pages/*.blade.php';
 @source '../../../../resources/views/livewire/**/*';
 
