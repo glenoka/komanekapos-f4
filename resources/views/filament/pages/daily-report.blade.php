@@ -3,7 +3,12 @@
 {{ $this->form }}
   
    
-    @livewire(\App\Filament\Widgets\MonthlySalesStats::class)
+    @livewire(\App\Filament\Widgets\MonthlySalesStats::class, [
+    'month' => $selectedMonth ?? now()->month,
+    'year' => $selectedYear ?? now()->year,
+], key($selectedMonth.'-'.$selectedYear))
+   
+    {{-- Kalender Penjualan --}}
     <x-filament::section>
         <x-slot name="heading">
             <h2 class="text-2xl font-bold mb-6">📅 Sales Calendar - {{ \Carbon\Carbon::createFromDate($selectedYear ?? now()->year, $selectedMonth ?? now()->month)->translatedFormat('F Y') }}

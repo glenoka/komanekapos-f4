@@ -34,6 +34,8 @@ class DailyReport extends Page implements HasForms
     public $selectedYear;
     public array $formData = [];
 
+
+
     public function updateCalendar(): void
     {
         $data = $this->form->getState(); // ambil semua nilai dari form
