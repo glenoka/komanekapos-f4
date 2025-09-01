@@ -1,10 +1,16 @@
 <x-filament::page>
 
 {{ $this->form }}
-    <h2 class="text-2xl font-bold mb-6">📅 Sales Calendar - {{ \Carbon\Carbon::createFromDate($selectedYear ?? now()->year, $selectedMonth ?? now()->month)->translatedFormat('F Y') }}
-    </h2>
-
-    {{-- Header Hari --}}
+  
+   
+    @livewire(\App\Filament\Widgets\MonthlySalesStats::class)
+    <x-filament::section>
+        <x-slot name="heading">
+            <h2 class="text-2xl font-bold mb-6">📅 Sales Calendar - {{ \Carbon\Carbon::createFromDate($selectedYear ?? now()->year, $selectedMonth ?? now()->month)->translatedFormat('F Y') }}
+            </h2>
+        </x-slot>
+    
+         {{-- Header Hari --}}
     <div class="grid grid-cols-7 gap-2 text-center text-sm font-semibold text-gray-600 mb-2">
         <div>Mon</div>
         <div>Tue</div>
@@ -52,4 +58,7 @@
             @endforeach
         @endforeach
     </div>
+    </x-filament::section>
+   
+   
 </x-filament::page>

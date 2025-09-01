@@ -152,4 +152,6 @@ class DailyReport extends Page implements HasForms
     $filename = 'daily_report_' . now()->format('Y_m_d_His') . '.xlsx';
     return Excel::download(new DailyReportExport($this->selectedMonth, $this->selectedYear), $filename);
 }
+
+
 }
