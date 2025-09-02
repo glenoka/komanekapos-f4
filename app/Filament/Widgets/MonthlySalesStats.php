@@ -25,7 +25,7 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
     public function getCurrentTotal(): float
     {
-        return SaleS::query()
+        return Sales::query()
             ->whereYear('sale_date', $this->year)
             ->whereMonth('sale_date', $this->month)
             ->sum('total_amount');
