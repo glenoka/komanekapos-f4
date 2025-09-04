@@ -19,7 +19,7 @@ class MigrationSalesItems extends Seeder
 
         echo "Starting migration of Sales Items...\n";
 
-        DB::table('sale_items_old')->orderBy('id')->chunkById(500, function ($oldSalesItem) {
+        DB::table('sale_items_old')->orderBy('id')->chunkById(1000, function ($oldSalesItem) {
             foreach ($oldSalesItem as $old) {
                 DB::table('sales_details')->insert([
                     'sale_id'        => $old->sale_id,
