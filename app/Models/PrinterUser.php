@@ -4,18 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class PrinterTask extends Model
+class PrinterUser extends Model
 {
     protected $fillable=[
         'printer_id',
-        'ip_address',
-        'device_name',
-        'device_uuid',
-       
+        'user_id',
     ];
 
     public function printer(){
         return $this->belongsTo(Printers::class);
     }
-    
+    public function user(){
+        return $this->belongsTo(User::class);
+    }
 }

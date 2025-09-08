@@ -2,43 +2,34 @@
 
 namespace App\Filament\Resources\Printers\RelationManagers;
 
+use App\Models\User;
+use Filament\Tables\Table;
 use Filament\Actions\Action;
-use Filament\Actions\AssociateAction;
-use Filament\Actions\BulkActionGroup;
+use Filament\Schemas\Schema;
+use Filament\Actions\EditAction;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
+use Filament\Actions\AssociateAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Forms\Components\Select;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\DissociateAction;
-use Filament\Actions\DissociateBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Forms\Components\TextInput;
-use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Table;
+use Filament\Forms\Components\TextInput;
+use Filament\Actions\DissociateBulkAction;
+use Filament\Resources\RelationManagers\RelationManager;
 
 class PrinterTaskRelationManager extends RelationManager
 {
-    protected static string $relationship = 'printer_task';
+    protected static string $relationship = 'printer_user';
 
     public function form(Schema $schema): Schema
     {
         return $schema
             ->components([
-                TextInput::make('device_name')
-                ->required()
-                ->maxLength(255),
-            
-          
-                TextInput::make('device_uuid')
-                ->required()
-                ->maxLength(255)
-                ->default(fn () => (string) \Illuminate\Support\Str::uuid()),
-            
-            TextInput::make('ip_address')
-                ->required()
-                ->default(fn () => request()->ip())
-                ->maxLength(255),
+                Select::make('user_id')
+                ->options(User::pluck('username','id'))
+                ->required(),
             
             ]);
     }
@@ -49,9 +40,7 @@ class PrinterTaskRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('name')
             ->columns([
-                TextColumn::make('device_name')
-                    ->searchable(),
-                    TextColumn::make('ip_address')
+                TextColumn::make('user.username')
                     ->searchable(),
             ])
             ->filters([

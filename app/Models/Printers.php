@@ -21,4 +21,8 @@ class Printers extends Model
     {
         return $this->hasMany(PrinterTask::class,'printer_id','id');
     }
+    public function printer_user():HasMany
+    {
+        return $this->hasMany(PrinterUser::class,'printer_id','id');
+    }
 }
