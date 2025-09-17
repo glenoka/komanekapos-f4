@@ -13,6 +13,7 @@ use Livewire\Component;
 use App\Models\Category;
 use App\Models\Printers;
 use App\Models\Customer;
+use App\Models\PrinterUser;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Mike42\Escpos\Printer;
@@ -357,42 +358,71 @@ class Pos extends Component implements HasForms, HasTable, HasActions
                     ->collapsed(),
             ]);
     }
-    public function increaseQuantity($productId)
-    {
-        $product = Product::find($productId);
+    public function increaseQty($index)
+{
+    $this->order_items[$index]['quantity']++;
+    $this->updateSubtotal($index);
+}
 
-        foreach ($this->order_items as $key => $item) {
-            if ($item['product_id'] == $product->id) {
-                $this->order_items[$key]['quantity']++;
-                $this->order_items[$key]['price'] = $this->order_items[$key]['unit_price'] * $this->order_items[$key]['quantity'];
-                $this->order_items[$key]['final_price'] = $this->order_items[$key]['price'];
-                $this->recalculateItemPrice($key, $this->order_items[$key]['discount']);
-            }
-        }
-        session()->put('orderItems', $this->order_items);
+public function decreaseQty($index)
+{
+    if ($this->order_items[$index]['quantity'] > 1) {
+        $this->order_items[$index]['quantity']--;
+        $this->updateSubtotal($index);
     }
+}
 
-    public function decreaseQuantity($productId)
-    {
-        $product = Product::find($productId);
+public function updateSubtotal($index)
+{
+    $qty = $this->order_items[$index]['quantity'];
+    $unit_price = $this->order_items[$index]['unit_price'];
 
-        foreach ($this->order_items as $key => $item) {
-            if ($item['product_id'] == $product->id) {
-                if ($this->order_items[$key]['quantity'] > 1) {
+    // hitung ulang price
+    $this->order_items[$index]['price'] = $qty * $unit_price;
 
-                    $this->order_items[$key]['quantity']--;
-                    $this->order_items[$key]['price'] = $this->order_items[$key]['unit_price'] * $this->order_items[$key]['quantity'];
-                    $this->order_items[$key]['final_price'] = $this->order_items[$key]['price'];
-                    $this->recalculateItemPrice($key, $this->order_items[$key]['discount']);
-                } else {
-                    unset($this->order_items[$key]);
-                    $this->order_items = array_values($this->order_items);
-                }
-                break;
-            }
-        }
-        session()->put('orderItems', $this->order_items);
-    }
+    // untuk sekarang discount_amount masih 0
+    $discount_amount = $this->order_items[$index]['discount_amount'] ?? 0;
+
+    // hitung final price
+    $this->order_items[$index]['final_price'] = $this->order_items[$index]['price'] - $discount_amount;
+}
+
+    // public function increaseQuantity($productId)
+    // {
+    //     $product = Product::find($productId);
+
+    //     foreach ($this->order_items as $key => $item) {
+    //         if ($item['product_id'] == $product->id) {
+    //             $this->order_items[$key]['quantity']++;
+    //             $this->order_items[$key]['price'] = $this->order_items[$key]['unit_price'] * $this->order_items[$key]['quantity'];
+    //             $this->order_items[$key]['final_price'] = $this->order_items[$key]['price'];
+    //             $this->recalculateItemPrice($key, $this->order_items[$key]['discount']);
+    //         }
+    //     }
+    //     session()->put('orderItems', $this->order_items);
+    // }
+
+    // public function decreaseQuantity($productId)
+    // {
+    //     $product = Product::find($productId);
+
+    //     foreach ($this->order_items as $key => $item) {
+    //         if ($item['product_id'] == $product->id) {
+    //             if ($this->order_items[$key]['quantity'] > 1) {
+
+    //                 $this->order_items[$key]['quantity']--;
+    //                 $this->order_items[$key]['price'] = $this->order_items[$key]['unit_price'] * $this->order_items[$key]['quantity'];
+    //                 $this->order_items[$key]['final_price'] = $this->order_items[$key]['price'];
+    //                 $this->recalculateItemPrice($key, $this->order_items[$key]['discount']);
+    //             } else {
+    //                 unset($this->order_items[$key]);
+    //                 $this->order_items = array_values($this->order_items);
+    //             }
+    //             break;
+    //         }
+    //     }
+    //     session()->put('orderItems', $this->order_items);
+    // }
     // Helper methods
     public function calculateSubtotal()
     {
@@ -806,9 +836,12 @@ class Pos extends Component implements HasForms, HasTable, HasActions
     function printOrderToLan($saleId)
     {
         $sale = Sales::with('detailSales', 'customer')->findOrFail($saleId);
-
+        $printers = PrinterUser::with('printer')
+        ->where('user_id', Auth::id())
+        ->first();
+        $ip_printer=$printers->printer->ip_address;
         try {
-            $ip = "192.168.4.38"; // IP printer
+            $ip =$ip_printer; // IP printer
             $port = 9100; // Default thermal printer LAN port
 
             $connector = new NetworkPrintConnector($ip, $port);

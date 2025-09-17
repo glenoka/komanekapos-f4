@@ -131,18 +131,28 @@
 
                         <!-- Quantity Controls Inline -->
                         <div class="flex items-center gap-2">
-                            <x-filament::button wire:click="decreaseQuantity({{ $item['product_id'] }})"
-                                color="warning" size="sm">
-                                <x-heroicon-o-minus class="w-3 h-3" />
-                            </x-filament::button>
+                            <x-filament::button 
+            color="gray" 
+            size="sm"
+            wire:click="decreaseQty({{ $index }})">
+            -
+        </x-filament::button>
+        <x-filament::input.wrapper class='w-16'>
+    <x-filament::input
+    type="number"
+    wire:model.live="order_items.{{ $index }}.quantity"
+    wire:change="updateSubtotal({{ $index }})"
+    class="w-16 text-center"
+    />
+</x-filament::input.wrapper >
+        
 
-                            <span
-                                class="px-3 py-1 bg-white dark:bg-gray-800 rounded border border-gray-300 dark:border-gray-500 font-semibold text-gray-900 dark:text-gray-100 min-w-[2.5rem] text-center">{{ $item['quantity'] }}</span>
-
-                            <x-filament::button wire:click="increaseQuantity({{ $item['product_id'] }})"
-                                color="success" size="sm">
-                                <x-heroicon-o-plus class="w-3 h-3" />
-                            </x-filament::button>
+    <x-filament::button 
+    color="gray" 
+    size="sm"
+    wire:click="increaseQty({{ $index }})">
+    +
+</x-filament::button>
                         </div>
                     </div>
 
