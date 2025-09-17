@@ -2,9 +2,11 @@
 
 namespace App\Filament\Pages;
 
+use BackedEnum;
 use App\Models\Printers;
 use Filament\Pages\Page;
-use BackedEnum;
+use Illuminate\Support\Facades\Auth;
+
 
 class Pos extends Page
 
@@ -17,12 +19,14 @@ protected static string | BackedEnum | null $navigationIcon = 'heroicon-o-comput
 
     
     public function mount(){
-        $ip = request()->ip();
-        $printer = Printers::whereHas('printer_task', function ($q) use ($ip) {
-            $q->where('ip_address', $ip);
+
+        
+        $user = Auth::user()->id;
+        $printer = Printers::whereHas('printer_user', function ($q) use ($user) {
+            $q->where('user_id', $user);
         })->first();
         $ipPrinter = $printer->ip_address??null;
-
+      
         if ($printer) {
             $ipPrinter = $printer->ip_address;
             $printerName = $printer->name;
@@ -35,6 +39,7 @@ protected static string | BackedEnum | null $navigationIcon = 'heroicon-o-comput
             // Simpan/update session dengan status terbaru
             session()->put('status_printer', $isReachable);
             session()->put('printernya','aada');
+            session()->put('ip_printer',$ipPrinter);
 
             session()->put("printer_{$ipPrinter}_last_checked", now());
 

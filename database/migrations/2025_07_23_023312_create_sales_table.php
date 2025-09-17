@@ -26,7 +26,7 @@ return new class extends Migration
                 'business_entertainment', // Entertaining tamu bisnis
                 'banquet/wedding',       // Event/wedding catering
             ])->default('regular')->nullable();
-            $table->enum('order_type', ['dine_in', 'room_service', 'takeaway','other'])->default('dine_in');
+            $table->enum('order_type', ['dine_in', 'room_service', 'takeaway','other'])->default('dine_in')->nullable();
             // Financial info
             $table->decimal('subtotal', 15, 2);
             $table->decimal('tax_amount', 15, 2)->default(0);

@@ -17,10 +17,7 @@ class Printers extends Model
         'mac_address'
     ];
 
-    public function printer_task():HasMany
-    {
-        return $this->hasMany(PrinterTask::class,'printer_id','id');
-    }
+    
     public function printer_user():HasMany
     {
         return $this->hasMany(PrinterUser::class,'printer_id','id');
