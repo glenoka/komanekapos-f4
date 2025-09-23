@@ -25,9 +25,11 @@ use Filament\Actions\Action;
 use Filament\Schemas\Schema;
 use Livewire\WithPagination;
 
-use Mike42\Escpos\EscposImage;
-use Illuminate\Support\Facades\DB;
+use Rawilk\Printing\Facades\Printing;
 
+use Mike42\Escpos\EscposImage;
+
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\HtmlString;
 use Filament\Tables\Columns\Column;
 use Illuminate\Support\Facades\Log;
@@ -41,11 +43,11 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+
 use Filament\Schemas\Components\Section;
-
 use Filament\Actions\Contracts\HasActions;
-use Filament\Forms\Components\Placeholder;
 
+use Filament\Forms\Components\Placeholder;
 use niklasravnsborg\LaravelPdf\Facades\Pdf;
 use Filament\Schemas\Components\Utilities\Get;
 use Illuminate\Validation\ValidationException;
@@ -840,6 +842,10 @@ public function updateSubtotal($index)
     }
     public function downloadReceipt1()
     {
+        $printers = Printing::printers();
+        foreach ($printers as $printer) {
+            dump($printer->id, $printer->name);
+        }
         $data = [
             'guest' => '201',
             'activity' => 'Lunch',
@@ -871,6 +877,14 @@ public function updateSubtotal($index)
         $filename = 'receipt.pdf';
         $path = public_path('print/' . $filename);
         $mpdf->Output($path, 'F');
+        $printer = Printing::newPrinter('PrinterEpsonPool');
+      
+        $printJob = Printing::newPrintTask()
+    ->printer($printer)
+    ->file('public/print/receipt.pdf')
+    ->send();
+
+$printJob->id();
     }
     //print
     function printOrderToLan($saleId)
