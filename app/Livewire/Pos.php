@@ -3,36 +3,37 @@
 namespace App\Livewire;
 
 
+use Mpdf\Mpdf;
 use Filament\Forms;
 use App\Models\Sales;
 use App\Models\Product;
-use Filament\Schemas\Components\Utilities\Get;
 
 use Filament\Forms\Set;
 use Livewire\Component;
 use App\Models\Category;
-use App\Models\Printers;
 use App\Models\Customer;
-use App\Models\PrinterUser;
+use App\Models\Printers;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Mike42\Escpos\Printer;
+use App\Models\PrinterUser;
 
 
 use App\Models\SalesDetail;
 
 use Filament\Actions\Action;
+use Filament\Schemas\Schema;
 use Livewire\WithPagination;
+
 use Mike42\Escpos\EscposImage;
 use Illuminate\Support\Facades\DB;
+
 use Illuminate\Support\HtmlString;
 use Filament\Tables\Columns\Column;
-
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
-use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Grid;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Components\Textarea;
@@ -40,12 +41,14 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Section;
+
 use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\Placeholder;
 
+use niklasravnsborg\LaravelPdf\Facades\Pdf;
+use Filament\Schemas\Components\Utilities\Get;
 use Illuminate\Validation\ValidationException;
-use Filament\Schemas\Schema;
-
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Actions\Concerns\InteractsWithActions;
@@ -831,7 +834,44 @@ public function updateSubtotal($index)
         }
         $this->countBillHold--;
     }
+    public function downloadReceipt()
+    {
+        return redirect()->route('receipt.pdf');
+    }
+    public function downloadReceipt1()
+    {
+        $data = [
+            'guest' => '201',
+            'activity' => 'Lunch',
+            'sale_no' => '58567',
+            'date' => now()->format('d/m/Y H:i:s'),
+            'items' => [
+                ['desc' => 'Pineapple Basil', 'qty' => 1, 'price' => 95000],
+                ['desc' => 'Spinach Pizza', 'qty' => 1, 'price' => 95000],
+            ],
+            'tax' => 39900,
+        ];
 
+        $data['total'] = collect($data['items'])->sum(fn($i) => $i['price'] * $i['qty']);
+        $data['grand_total'] = $data['total'] + $data['tax'];
+
+        $html = view('receipt_80mm', $data)->render();
+
+        //$mpdf = new Mpdf(['mode' => 'utf-8', 'format' => [80, 200]]);
+        $mpdf = new \Mpdf\Mpdf([
+            'mode' => 'utf-8',
+            'format' => [80, 200],   // 80mm x tinggi dinamis
+            'margin_left' => 2,
+            'margin_right' => 2,
+            'margin_top' => 2,
+            'margin_bottom' => 2,
+        ]);
+        $mpdf->WriteHTML($html);
+
+        $filename = 'receipt.pdf';
+        $path = public_path('print/' . $filename);
+        $mpdf->Output($path, 'F');
+    }
     //print
     function printOrderToLan($saleId)
     {

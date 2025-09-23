@@ -86,10 +86,15 @@
                         <span>Clear</span>
                     </x-filament::button>
                 @endif
-
+                
                 <x-filament::button badge-color="danger" color="gray" size="sm" wire:click="loadHoldBillList()">
                     <x-slot name="badge">{{ $this->countBillHold }}</x-slot>
                     <span>Hold Bill</span>
+                </x-filament::button>
+                
+                <x-filament::button badge-color="danger" color="gray" size="sm" wire:click="downloadReceipt()">
+                    <x-slot name="badge">{{ $this->countBillHold }}</x-slot>
+                    <span>Print</span>
                 </x-filament::button>
                 {{-- Modal List --}}
                 
@@ -205,7 +210,7 @@
                                 Processing...
                             </span>
                         </x-filament::button>
-
+                        
                         <!-- Process Payment Modal Trigger -->
                         <x-filament::modal width="xl">
                             <x-slot name="trigger">
